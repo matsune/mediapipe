@@ -92,15 +92,17 @@ FaceLandmarker* CppFaceLandmarkerCreate(const FaceLandmarkerOptions& options,
 
     FaceLandmarkerOptions::result_callback_fn result_callback =
         options.result_callback;
+    void* context = options.context;
     cpp_options->result_callback =
-        [result_callback](absl::StatusOr<CppFaceLandmarkerResult> cpp_result,
-                          const Image& image, int64_t timestamp) {
+        [result_callback, context](
+            absl::StatusOr<CppFaceLandmarkerResult> cpp_result,
+            const Image& image, int64_t timestamp) {
           char* error_msg = nullptr;
 
           if (!cpp_result.ok()) {
             ABSL_LOG(ERROR) << "Detection failed: " << cpp_result.status();
             CppProcessError(cpp_result.status(), &error_msg);
-            result_callback({}, MpImage(), timestamp, error_msg);
+            result_callback({}, MpImage(), timestamp, error_msg, context);
             free(error_msg);
             return;
           }
@@ -119,7 +121,7 @@ FaceLandmarker* CppFaceLandmarkerCreate(const FaceLandmarkerOptions& options,
                   .height = image_frame->Height()}};
 
           result_callback(&result, mp_image, timestamp,
-                          /* error_msg= */ nullptr);
+                          /* error_msg= */ nullptr, context);
 
           CppCloseFaceLandmarkerResult(&result);
         };

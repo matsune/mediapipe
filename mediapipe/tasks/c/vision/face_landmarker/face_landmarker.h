@@ -82,8 +82,10 @@ struct FaceLandmarkerOptions {
   // A caller is responsible for closing face landmarker result.
   typedef void (*result_callback_fn)(const FaceLandmarkerResult* result,
                                      const MpImage& image, int64_t timestamp_ms,
-                                     char* error_msg);
+                                     char* error_msg, void* context);
   result_callback_fn result_callback;
+
+  void* context;
 };
 
 // Creates an FaceLandmarker from the provided `options`.
